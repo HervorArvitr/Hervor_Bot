@@ -2,7 +2,7 @@
 
 - A twitter bot I created to insult Onision's its main feature
 
-The bot also has lesser features such as:
+-The bot also has lesser features such as:
   Tweeting from the command line
   Reading off tweet previews from the bot's timeline
 
