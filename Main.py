@@ -4,6 +4,7 @@ import tweepy
 import pandas as pd
 import time
 from pandas import DataFrame,set_option
+from datetime import datetime
 
 set_option('display.max_colwidth',100)
 pd.set_option('display.expand_frame_repr', True)
@@ -31,6 +32,7 @@ api = tweepy.API(auth,wait_on_rate_limit = True,
 wait_on_rate_limit_notify = True)
 
 opinion = 0
+proceed = 1
 if opinion == 0:
 #==========DEFINING BOT FUNTIONALITIES=====================================================================
 
@@ -45,7 +47,8 @@ if opinion == 0:
                 self.api.verify_credentials()
                 return "Authenticated"
             except Exception as e:
-                print(e)
+                return str(e)
+
 
         def Choice(self):
             choice = input("Please select a functionality to access: \n>")
@@ -117,61 +120,79 @@ if opinion == 0:
                     try:
                         time.sleep(2)
                         self.api.update_status(tweet_string)
-                        print("\n000")
-                        successful = 1
+                        now = datetime.now()
+                        day = now.strftime("%A %B %dth")
+                        current_time = now.strftime("%I:%M:%S %p")
+                        print("\nSuccessfully tweeted at " + day+" "+current_time)
                         time.sleep(time_between_tweets)
+                        successful = 1
 
                     except Exception as e:
                         print(e)
+                        successful = 1
 
         def Terminate(self):
 
-            return '000'
+            return 0
 
 
     #==========CREATING A BOT INSTANCE=========================================================================
 
     Session = Functionalities(api,auth,Greg_Tweets)
+    authenticate = Session.Authentication()
+    if (authenticate == "Authenticated"):
+        print(authenticate)
+    else:
+        print("AUTHENTICATION ERROR CODE: "+authenticate)
+        print(" \n Please verify login credentials")
+        trivial_input = input("\n Press Enter key to terminate window \n >")
+        proceed = Session.Terminate()
+    #==========CHOOSING FUNCTIONALITY AND LOOPING==========================================================================
 
-    print(Session.Authentication())
 
-    #==========CHOOSING FUNCTIONALITY==========================================================================
+    while proceed==1:
 
-    print("\n-Tweet \n-Search Users \n-Recent Tweets \n-Timed Tweets \n-Terminate \n")
+        print("\n-Tweet \n-Search Users \n-Recent Tweets \n-Timed Tweets \n-Terminate \n")
 
-    choice = Session.Choice()
-    choice = choice.lower()
+        choice = Session.Choice()
+        choice = choice.lower()
 
-    #==========DEFINING FUNCTIONALITY CLAUSES==================================================================
+        #==========DEFINING FUNCTIONALITY CLAUSES==================================================================
 
-    def Session_function_choice(choice):
+        def Session_function_choice(choice):
 
-         if choice in ('search user','user search','search users','users search'):
-              return Session.Get_User_Details()
+             if choice in ('search user','user search','search users','users search'):
+                  return Session.Get_User_Details()
 
-         elif choice in ('recent tweets','recents tweets'):
-             output = Session.Get_recent_tweets()
-             print(output)
-             subchoice = int(input("\nView full tweet by row index: \n>"))
-             subchoice-=1
-             set_option('display.max_colwidth',1000)
-             print(output.iat[subchoice,0])
+             elif choice in ('recent tweets','recents tweets'):
+                 output = Session.Get_recent_tweets()
+                 print(output)
 
-         elif choice in ('tweet',"tweets"):
-            return Session.Tweet()
+                 subchoice = (input("\nView full tweet by row index? : \n>"))
+                 if subchoice in ("yes","Yes","YES","yeah","Yeah,""YEAH","sure","Sure","SURE"):
+                     subchoice_int = int(input("\nRow number: \n>"))
+                     subchoice_int-=1
+                     set_option('display.max_colwidth',1000)
+                     print(output.iat[subchoice_int,0])
+                 else:
+                    print("Tweets closed")
 
-         elif choice in ('timed tweets','timedtweets','timed tweet','timedtweet'):
-            return Session.Timed_Tweet()
+             elif choice in ('tweet',"tweets"):
+                return Session.Tweet()
 
-         elif choice in ("Terminate","terminate","end","End","Stop","stop"):
-            return Session.Terminate()
+             elif choice in ('timed','timed tweets','timedtweets','timed tweet','timedtweet'):
+                return Session.Timed_Tweet()
 
-    try:
-        print(Session_function_choice(choice))
+             elif choice in ("Terminate","terminate","end","End","Stop","stop"):
+                return Session.Terminate()
 
-    except Exception as e:
-        print(e)
+        try:
+            print(Session_function_choice(choice))
 
-    cont = input("Would you like like to continue?")
-    if cont in ("yes","Yes","YES","yeah","Yeah,""YEAH","sure","Sure","SURE"):
-        print("SURE","yes","Yes","YES","yeah","Yeah,""YEAH","sure","Sure")
+        except Exception as e:
+            print(e)
+
+        cont = input("Would you like like to continue?")
+        if cont not in ("y","ye","yes","Yes","YES","yeah","Yeah,""YEAH","sure","Sure","SURE"):
+            #print("SURE","yes","Yes","YES","yeah","Yeah,""YEAH","sure","Sure")
+            proceed = 0
